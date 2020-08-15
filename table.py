@@ -1,4 +1,3 @@
-from copy import deepcopy
 from figures import Figure, Shape
 from utils import RetryOnException, CollisionError, BoundCollisionError, InvalidInputError
 
@@ -28,6 +27,7 @@ class Table:
         self.points = set()
         self.figure = None
         self.score = 0
+        self.game_over = False
 
     @RetryOnException(IndexError, BoundCollisionError)
     def spawn_figure(self, shape=None):
@@ -54,7 +54,7 @@ class Table:
                 raise CollisionError
 
     def move_or_rotate_figure(self, direction_key):
-        oldpoints = deepcopy(self.figure.get_points)
+        oldpoints = self.figure.get_points
         points = self.figure.handle(direction_key)
 
         self.points = self.points.difference(oldpoints)
@@ -72,6 +72,12 @@ class Table:
                 self.score += 1
                 print(f'Row Completed! Your Score: {self.score}')
 
+    def check_game_over(self):
+        values = [field.value for field in self.grid[0].fields]
+        if '*' in values:
+            self.game_over = True
+
+
 
 # Example shapes of a figure
 shapes = list()
@@ -79,7 +85,7 @@ shapes.append(Shape(((0, 0), (-1, 0), (-1, -1))))
 shapes.append(Shape(((0, 0), (1, 0), (2, 0), (3, 0), (0, -1))))
 shapes.append(Shape(((0, 1), (0, 2), (0, 3), (0, 4), (0, 5))))
 
-table = Table()  # Consider passing range_rows=10 when testing
+table = Table(range_rows=5)  # Consider passing range_rows=10 when testing
 # table.spawn_figure(random.choice(shapes))  # Init of figure based on random shape
 table.spawn_figure(shapes[2])  # Straight bars only to simplify score incrementation testing - it works.
 
@@ -87,13 +93,15 @@ while True:
     table.display_frame()
     direction_key = None
     while direction_key not in {'w', 's', 'a', 'd', 'x'}:
+        if table.game_over:
+            print('Game Over!')
+            break
         direction_key = input('Type w/s to rotate or a/d to move right/left or x to pass:\n')
         if direction_key:
             try:
                 table.move_or_rotate_figure(direction_key)
             except InvalidInputError:
-                # This needs real handling, I'm short of time tho :(
-                print('\n\nBOUND COLLISION! YOU CANT MOVE BEYOND THE BOUNDS!.\n\n')
+                print('\n\nInvalid move! Please type again. \n\n')
             except CollisionError:
                 table.spawn_figure(shapes[2])
             finally:

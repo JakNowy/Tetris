@@ -30,7 +30,7 @@ class Figure:
     def handle(self, key):
         try:
             rotation_index = self.rotate(key)
-            centroid = self.move(key, self.centroid)
+            centroid = self.move(key)
             centroid = self.move_down(centroid)
             rotation = self.rotations[rotation_index]
             points = {self.calculate_point(vector, rotation, rotation_index, centroid) for vector in self.shape if
@@ -82,7 +82,8 @@ class Figure:
                 rotation_index = 3
         return rotation_index
 
-    def move(self, key, centroid):
+    def move(self, key):
+        centroid = self.centroid
         if key == 'a':
             centroid = (self.centroid[0] - 1, self.centroid[1])
         if key == 'd':
