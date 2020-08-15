@@ -29,22 +29,31 @@ class Figure(Shape):
         return point if point[1] in set(range(self.range_rows)) else None
 
     def rotate(self, key):
-        if key == 'a':
+        if key == 'w':
+            print('rotating +')
             if self.rotation_index < 3:
                 self.rotation_index += 1
             else:
                 self.rotation_index = 0
 
-        elif key == 'd':
+        else:
+            print('rotating -')
             if self.rotation_index > 0:
                 self.rotation_index -= 1
             else:
                 self.rotation_index = 3
-        return self.points
+        return self.move_down()
+
+    def move(self, key):
+        if key == 'a':
+            print('moving -')
+            self.centroid = (self.centroid[0] - 1, self.centroid[1])
+        else:
+            print('moving +')
+            self.centroid = (self.centroid[0] + 1, self.centroid[1])
+        return self.move_down()
 
     def move_down(self):
-        print(self.centroid)
         self.centroid = (self.centroid[0], self.centroid[1] + 1)
-        print(self.centroid)
+        print(f'{self.centroid=}')
         return self.points
-

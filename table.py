@@ -38,10 +38,10 @@ class Table:
         return self.figure
 
     def move_down(self):
-        self.figure_old = deepcopy(self.figure)
+        old_points = deepcopy(self.figure.points)
         new_points = self.figure.move_down()
         self.check_colision(new_points)
-        self.update_frame(self.figure_old.points, ' ')
+        self.update_frame(old_points, ' ')
         self.update_frame(new_points, '*')
 
     def check_colision(self, points):
@@ -59,20 +59,26 @@ class Table:
         for x, y in points:
             self.grid[y].fields[x].value = value
 
-    def rotate_figure(self):
-        self.update_frame(self.figure.points, ' ')
-        direction_key = input('Rotate:\n')
-        points = self.figure.rotate(direction_key)
-
+    def move_or_rotate_figure(self, direction_key):
+        old_points = deepcopy(self.figure.points)
+        if direction_key in {'w', 's'}:
+            points = self.figure.rotate(direction_key)
+        elif direction_key in {'a', 'd'}:
+            points = self.figure.move(direction_key)
+        else:
+            points = self.figure.move_down()
+        self.update_frame(old_points, ' ')
         self.update_frame(points, '*')
 
 
 table = Table()
 table.spawn_figure()
 while True:
-    table.rotate_figure()
-    try:
-        table.move_down()
-    except CollisionError:
-        print('COLISSION!!!')
     table.display_frame()
+    direction_key = input('Press w/s to rotate or a/d to move right/left:\n')
+    print(f'{direction_key=}')
+    print(f'{direction_key=="a"=}')
+    try:
+        table.move_or_rotate_figure(direction_key)
+    except CollisionError:
+        pass
