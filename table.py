@@ -12,11 +12,10 @@ class Field:
         return self.value
 
 
-class Row(list):
+class Row:
 
     def __init__(self, range_cols):
         self.fields = [Field() for _ in range(range_cols)]
-        super(Row, self).__init__()
 
 
 class Table:
@@ -37,19 +36,6 @@ class Table:
         self.update_frame(self.points, '*')
         return self.figure
 
-    def move_down(self):
-        old_points = deepcopy(self.figure.points)
-        new_points = self.figure.move_down()
-        self.check_colision(new_points)
-        self.update_frame(old_points, ' ')
-        self.update_frame(new_points, '*')
-
-    def check_colision(self, points):
-        for point in points:
-            if point in self.points:
-                print(f'Collision point: {point}')
-                raise CollisionError
-
     def display_frame(self):
         print(f'  {list(range(10))}')
         for index, row in enumerate(self.grid):
@@ -59,6 +45,12 @@ class Table:
         for x, y in points:
             self.grid[y].fields[x].value = value
 
+    def check_colision(self, points):
+        for point in points:
+            if point in self.points:
+                print(f'Collision point: {point}')
+                raise CollisionError
+
     def move_or_rotate_figure(self, direction_key):
         old_points = deepcopy(self.figure.points)
         if direction_key in {'w', 's'}:
@@ -67,18 +59,22 @@ class Table:
             points = self.figure.move(direction_key)
         else:
             points = self.figure.move_down()
+
+        self.points = self.points.difference(old_points)
+        self.check_colision(points)
+        self.points.update(points)
         self.update_frame(old_points, ' ')
-        self.update_frame(points, '*')
+        self.update_frame(self.points, '*')
 
 
 table = Table()
 table.spawn_figure()
 while True:
     table.display_frame()
-    direction_key = input('Press w/s to rotate or a/d to move right/left:\n')
-    print(f'{direction_key=}')
-    print(f'{direction_key=="a"=}')
+    direction_key = None
+    while direction_key not in {'w', 's', 'a', 'd', 'x'}:
+        direction_key = input('Type w/s to rotate or a/d to move right/left or x to pass:\n')
     try:
         table.move_or_rotate_figure(direction_key)
     except CollisionError:
-        pass
+        print('colission')

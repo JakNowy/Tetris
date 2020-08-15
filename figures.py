@@ -1,15 +1,10 @@
 import random
 
 
-class Shape:
+class Figure:
 
-    # shape = ((0, 0), (1, 0), (2, 0), (3, 0), (3, 1))
-    shape = ((0, 0), (1, 0), (2, 0), (3, 0), (0, -1), (0, -2), (0, -3))
-
-
-class Figure(Shape):
-
-    def __init__(self, range_rows, range_cols):
+    def __init__(self, range_rows, range_cols, shape=None):
+        self.shape = ((0, 0), (1, 0), (2, 0), (3, 0), (0, -1), (0, -2), (0, -3))
         self.range_rows = range_rows
         self.centroid = (random.randint(0, range_cols), 0)
         self.rotations = [(1, 1), (-1, 1), (-1, -1), (1, -1)]
@@ -30,14 +25,12 @@ class Figure(Shape):
 
     def rotate(self, key):
         if key == 'w':
-            print('rotating +')
             if self.rotation_index < 3:
                 self.rotation_index += 1
             else:
                 self.rotation_index = 0
 
         else:
-            print('rotating -')
             if self.rotation_index > 0:
                 self.rotation_index -= 1
             else:
@@ -46,10 +39,8 @@ class Figure(Shape):
 
     def move(self, key):
         if key == 'a':
-            print('moving -')
             self.centroid = (self.centroid[0] - 1, self.centroid[1])
         else:
-            print('moving +')
             self.centroid = (self.centroid[0] + 1, self.centroid[1])
         return self.move_down()
 
