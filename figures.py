@@ -1,6 +1,6 @@
 import random
 
-from utils import BoundCollisionError
+from utils import BoundCollisionError, InvalidInputError
 
 
 class Shape:
@@ -24,19 +24,40 @@ class Figure:
 
         self.on_bottom = False
         self.shape = shape.shape
-        self._points = []
+        self.points = []
+        self.key = None
+
+    def handle(self, key):
+        try:
+            rotation_index = self.rotate(key)
+            centroid = self.move(key, self.centroid)
+            centroid = self.move_down(centroid)
+            rotation = self.rotations[rotation_index]
+            points = {self.calculate_point(vector, rotation, rotation_index, centroid) for vector in self.shape if
+                      self.calculate_point(vector, rotation, rotation_index, centroid)}
+        except BoundCollisionError:
+            raise InvalidInputError
+        else:
+            self.rotation_index = rotation_index
+            self.centroid = centroid
+            self.rotation = rotation
+            self.points = points
+        finally:
+            return self.points
 
     @property
-    def points(self):
-        return {self.calculate_coords(vector) for vector in self.shape if self.calculate_coords(vector)}
+    def get_points(self):
+        points = {self.calculate_point(vector, self.rotation, self.rotation_index, self.centroid) for vector in
+                  self.shape if
+                  self.calculate_point(vector, self.rotation, self.rotation_index, self.centroid)}
+        return points
 
-    def calculate_coords(self, vector: tuple) -> tuple:
-        self.rotation = self.rotations[self.rotation_index]
+    def calculate_point(self, vector: tuple, rotation, rotation_index, centroid) -> tuple:
 
-        if self.rotation_index % 2 == 0:
-            point = self.centroid[0] + (vector[0] * self.rotation[0]), self.centroid[1] + (vector[1] * self.rotation[1])
+        if rotation_index % 2 == 0:
+            point = centroid[0] + (vector[0] * rotation[0]), centroid[1] + (vector[1] * rotation[1])
         else:
-            point = self.centroid[0] + (vector[1] * self.rotation[0]), self.centroid[1] + (vector[0] * self.rotation[1])
+            point = centroid[0] + (vector[1] * rotation[0]), centroid[1] + (vector[0] * rotation[1])
 
         if point[0] < 0 or point[0] > self.range_cols - 1:
             raise BoundCollisionError
@@ -47,27 +68,27 @@ class Figure:
         return point if point[1] in set(range(self.range_rows)) else None
 
     def rotate(self, key):
+        rotation_index = self.rotation_index
         if key == 's':
             if self.rotation_index < 3:
-                self.rotation_index += 1
+                rotation_index = self.rotation_index + 1
             else:
-                self.rotation_index = 0
+                rotation_index = 0
 
-        else:
+        elif key == 'w':
             if self.rotation_index > 0:
-                self.rotation_index -= 1
+                rotation_index = self.rotation_index - 1
             else:
-                self.rotation_index = 3
-        return self.move_down()
+                rotation_index = 3
+        return rotation_index
 
-    def move(self, key):
+    def move(self, key, centroid):
         if key == 'a':
-            self.centroid = (self.centroid[0] - 1, self.centroid[1])
-        else:
-            self.centroid = (self.centroid[0] + 1, self.centroid[1])
-        return self.move_down()
+            centroid = (self.centroid[0] - 1, self.centroid[1])
+        if key == 'd':
+            centroid = (self.centroid[0] + 1, self.centroid[1])
+        return centroid
 
-    def move_down(self):
-        self.centroid = (self.centroid[0], self.centroid[1] + 1)
-        print(f'{self.centroid=}')
-        return self.points
+    def move_down(self, centroid):
+        centroid = centroid[0], centroid[1] + 1
+        return centroid

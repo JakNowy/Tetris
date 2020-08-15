@@ -31,9 +31,11 @@ class Table:
 
     @RetryOnException(IndexError, BoundCollisionError)
     def spawn_figure(self, shape=None):
+
         self.figure = Figure(self._range_rows, self._range_cols, shape)
-        self.check_block_colision(self.figure.points)
-        self.points.update(self.figure.points)
+        points = self.figure.get_points
+        self.check_block_colision(points)
+        self.points.update(points)
         self.update_frame(self.points, '*')
 
     def display_frame(self):
@@ -52,22 +54,14 @@ class Table:
                 raise CollisionError
 
     def move_or_rotate_figure(self, direction_key):
-        try:
-            old_points = deepcopy(self.figure.points)
-            if direction_key in {'w', 's'}:
-                points = self.figure.rotate(direction_key)
-            elif direction_key in {'a', 'd'}:
-                points = self.figure.move(direction_key)
-            else:
-                points = self.figure.move_down()
+        oldpoints = deepcopy(self.figure.get_points)
+        points = self.figure.handle(direction_key)
 
-            self.points = self.points.difference(old_points)
-            self.check_block_colision(points)
-            self.points.update(points)
-            self.update_frame(old_points, ' ')
-            self.update_frame(self.points, '*')
-        except BoundCollisionError:
-            raise InvalidInputError
+        self.points = self.points.difference(oldpoints)
+        self.check_block_colision(points)
+        self.points.update(points)
+        self.update_frame(oldpoints, ' ')
+        self.update_frame(self.points, '*')
 
     def check_rows(self):
         for row in self.grid:
