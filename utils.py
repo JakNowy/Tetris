@@ -18,6 +18,10 @@ class RetryOnException:
         return wrapper
 
 
+class InvalidInputError(Exception):
+    pass
+
+
 class CollisionError(Exception):
     pass
 

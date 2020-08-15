@@ -1,6 +1,6 @@
 from copy import deepcopy
 from figures import Figure, Shape
-from utils import RetryOnException, CollisionError, BoundCollisionError
+from utils import RetryOnException, CollisionError, BoundCollisionError, InvalidInputError
 
 
 class Field:
@@ -52,19 +52,22 @@ class Table:
                 raise CollisionError
 
     def move_or_rotate_figure(self, direction_key):
-        old_points = deepcopy(self.figure.points)
-        if direction_key in {'w', 's'}:
-            points = self.figure.rotate(direction_key)
-        elif direction_key in {'a', 'd'}:
-            points = self.figure.move(direction_key)
-        else:
-            points = self.figure.move_down()
+        try:
+            old_points = deepcopy(self.figure.points)
+            if direction_key in {'w', 's'}:
+                points = self.figure.rotate(direction_key)
+            elif direction_key in {'a', 'd'}:
+                points = self.figure.move(direction_key)
+            else:
+                points = self.figure.move_down()
 
-        self.points = self.points.difference(old_points)
-        self.check_block_colision(points)
-        self.points.update(points)
-        self.update_frame(old_points, ' ')
-        self.update_frame(self.points, '*')
+            self.points = self.points.difference(old_points)
+            self.check_block_colision(points)
+            self.points.update(points)
+            self.update_frame(old_points, ' ')
+            self.update_frame(self.points, '*')
+        except BoundCollisionError:
+            raise InvalidInputError
 
     def check_rows(self):
         for row in self.grid:
@@ -79,7 +82,7 @@ class Table:
 # Example shapes of a figure
 shapes = list()
 shapes.append(Shape(((0, 0), (-1, 0), (-1, -1))))
-shapes.append(Shape(((0, 0), (1, 0), (2, 0), (3, 0), (0, -1), (0, -2), (0, -3))))
+shapes.append(Shape(((0, 0), (1, 0), (2, 0), (3, 0), (0, -1))))
 shapes.append(Shape(((0, 1), (0, 2), (0, 3), (0, 4), (0, 5))))
 
 table = Table()  # Consider passing range_rows=10 when testing
@@ -94,12 +97,13 @@ while True:
         if direction_key:
             try:
                 table.move_or_rotate_figure(direction_key)
-                table.check_rows()
-            except BoundCollisionError:
+            except InvalidInputError:
                 # This needs real handling, I'm short of time tho :(
                 print('\n\nBOUND COLLISION! YOU CANT MOVE BEYOND THE BOUNDS!.\n\n')
             except CollisionError:
                 table.spawn_figure(shapes[2])
+            finally:
+                table.check_rows()
     if table.figure.on_bottom:
         table.spawn_figure(shapes[2])
         # table.spawn_figure(random.choice(shapes))
