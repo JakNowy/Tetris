@@ -31,7 +31,7 @@ class Table:
 
     @RetryOnException(IndexError)
     def spawn_figure(self):
-        self.figure = Figure(self._range_cols)
+        self.figure = Figure(self._range_rows, self._range_cols)
         self.check_colision(self.figure.points)
         self.points.update(self.figure.points)
         self.update_frame(self.points, '*')
@@ -47,6 +47,7 @@ class Table:
     def check_colision(self, points):
         for point in points:
             if point in self.points:
+                print(f'Collision point: {point}')
                 raise CollisionError
 
     def display_frame(self):
@@ -73,5 +74,5 @@ while True:
     try:
         table.move_down()
     except CollisionError:
-        pass
+        print('COLISSION!!!')
     table.display_frame()

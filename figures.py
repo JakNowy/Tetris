@@ -9,7 +9,8 @@ class Shape:
 
 class Figure(Shape):
 
-    def __init__(self, range_cols):
+    def __init__(self, range_rows, range_cols):
+        self.range_rows = range_rows
         self.centroid = (random.randint(0, range_cols), 0)
         self.rotations = [(1, 1), (-1, 1), (-1, -1), (1, -1)]
         self.rotation_index = 3
@@ -17,14 +18,15 @@ class Figure(Shape):
 
     @property
     def points(self):
-        return {self.calculate_coords(vector) for vector in self.shape}
+        return {self.calculate_coords(vector) for vector in self.shape if self.calculate_coords(vector)}
 
     def calculate_coords(self, vector: tuple) -> tuple:
         self.rotation = self.rotations[self.rotation_index]
         if self.rotation_index % 2 == 0:
-            return self.centroid[0] + (vector[0] * self.rotation[0]), self.centroid[1] + (vector[1] * self.rotation[1])
+            point = self.centroid[0] + (vector[0] * self.rotation[0]), self.centroid[1] + (vector[1] * self.rotation[1])
         else:
-            return self.centroid[0] + (vector[1] * self.rotation[0]), self.centroid[1] + (vector[0] * self.rotation[1])
+            point = self.centroid[0] + (vector[1] * self.rotation[0]), self.centroid[1] + (vector[0] * self.rotation[1])
+        return point if point[1] in set(range(self.range_rows)) else None
 
     def rotate(self, key):
         if key == 'a':
