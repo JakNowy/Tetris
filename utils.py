@@ -3,15 +3,14 @@ class RetryOnException:
     Appropriate only for exceptions that are capable of handling themselves in next iterations.
     """
 
-    def __init__(self, exception):
-        self.exception = exception
+    def __init__(self, *exceptions):
+        self.exceptions = exceptions
 
     def __call__(self, callable):
         def wrapper(*args, **kwargs):
             try:
                 result = callable(*args, **kwargs)
-            except self.exception:
-                print('Retrying')
+            except self.exceptions:
                 return wrapper(*args, **kwargs)
             else:
                 return result
@@ -20,5 +19,9 @@ class RetryOnException:
 
 
 class CollisionError(Exception):
+    pass
+
+
+class BoundCollisionError(Exception):
     pass
 

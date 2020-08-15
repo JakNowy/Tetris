@@ -1,15 +1,27 @@
 import random
 
+from utils import BoundCollisionError
+
+
+class Shape:
+    def __init__(self, shape=None):
+
+        # Fields relative to the figure centroid
+        # Must be iterable OF 2 dim tuples
+        self.shape = shape or ((0, 0), (1, 0), (2, 0), (3, 0), (0, -1), (0, -2), (0, -3))
+
 
 class Figure:
 
     def __init__(self, range_rows, range_cols, shape=None):
-        self.shape = ((0, 0), (1, 0), (2, 0), (3, 0), (0, -1), (0, -2), (0, -3))
         self.range_rows = range_rows
+        self.range_cols = range_cols
         self.centroid = (random.randint(0, range_cols), 0)
         self.rotations = [(1, 1), (-1, 1), (-1, -1), (1, -1)]
         self.rotation_index = 3
         self.rotation = self.rotations[self.rotation_index]
+        self.on_bottom = False
+        self.shape = shape.shape
 
     @property
     def points(self):
@@ -21,10 +33,14 @@ class Figure:
             point = self.centroid[0] + (vector[0] * self.rotation[0]), self.centroid[1] + (vector[1] * self.rotation[1])
         else:
             point = self.centroid[0] + (vector[1] * self.rotation[0]), self.centroid[1] + (vector[0] * self.rotation[1])
+        if point[0] < 0 or point[0] > self.range_cols - 1:
+            raise BoundCollisionError
+        if point[1] == self.range_rows - 1:
+            self.on_bottom = True
         return point if point[1] in set(range(self.range_rows)) else None
 
     def rotate(self, key):
-        if key == 'w':
+        if key == 's':
             if self.rotation_index < 3:
                 self.rotation_index += 1
             else:
